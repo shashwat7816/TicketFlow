@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '../auth/AuthProvider'
+import AdminPasses from '../components/AdminPasses'
+import AdminSupport from '../components/AdminSupport'
 
 export default function AdminDashboard() {
     const { api } = useAuth()
@@ -127,6 +129,15 @@ export default function AdminDashboard() {
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            {/* Season Passes */}
+            <AdminPasses />
+
+            {/* Support Tickets */}
+            <div className="glass-panel p-6 mt-8">
+                <h2 className="text-xl font-bold text-white mb-6">Support Helpdesk</h2>
+                <AdminSupport />
             </div>
         </div>
     )

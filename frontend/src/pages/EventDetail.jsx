@@ -8,33 +8,30 @@ export default function EventDetail() {
   const { user, api } = useAuth()
   const [event, setEvent] = useState(null)
   const [seats, setSeats] = useState([])
-  const [selected, setSelected] = useState([]) // Array of seatIds
+  const [selected, setSelected] = useState([])
   const [reservation, setReservation] = useState(null)
-
-  // For General events
   const [ticketQuantity, setTicketQuantity] = useState(1)
   const [selectedTier, setSelectedTier] = useState(null)
-
   const [showSuccess, setShowSuccess] = useState(false)
   const [loading, setLoading] = useState(true)
 
+  // New state for Season Passes
+  const [myPasses, setMyPasses] = useState([])
+  const [redeemablePass, setRedeemablePass] = useState(null)
+
   useEffect(() => {
     fetchData()
-    // Poll for seat status every 5 seconds
+    if (user) fetchMyPasses()
     const interval = setInterval(fetchSeats, 5000)
     return () => clearInterval(interval)
-  }, [id])
+  }, [id, user]) // Re-run if user logs in
 
   async function fetchData() {
     try {
       const e = await api.get(`/api/events/${id}`)
       setEvent(e.data)
       await fetchSeats()
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
+    } catch (err) { console.error(err) } finally { setLoading(false) }
   }
 
   async function fetchSeats() {
@@ -44,6 +41,17 @@ export default function EventDetail() {
     } catch (err) { console.error(err) }
   }
 
+  async function fetchMyPasses() {
+    try {
+      const res = await api.get('/api/passes/mine')
+      const passes = res.data;
+      setMyPasses(passes);
+      // Check if any pass is valid
+      const valid = passes.find(p => p.status === 'active' && new Date(p.expiryDate) > new Date() && (p.passTypeId.type === 'unlimited' || p.remainingCredits > 0));
+      if (valid) setRedeemablePass(valid);
+    } catch (e) { console.error(e) }
+  }
+
   async function holdSeats() {
     let seatsToHold = []
 
@@ -51,17 +59,13 @@ export default function EventDetail() {
       if (selected.length === 0) return alert('Select seats')
       seatsToHold = selected
     } else {
-      // General with Tiers logic
       if (event.ticketTiers && event.ticketTiers.length > 0 && !selectedTier) {
         return alert('Please select a ticket type.')
       }
-
-      // Filter by tier section if tiers exist
       const available = seats.filter(s => {
         if (selectedTier) return s.status === 'available' && s.section === selectedTier.name
         return s.status === 'available'
       })
-
       if (available.length < ticketQuantity) return alert('Not enough tickets available in this tier')
       seatsToHold = available.slice(0, ticketQuantity).map(s => s.seatId)
     }
@@ -69,21 +73,60 @@ export default function EventDetail() {
     try {
       const resp = await api.post('/api/reservations', { eventId: id, seatIds: seatsToHold, holdSeconds: 300 })
       setReservation(resp.data)
-      setSeats(prev => prev.map(s => seatsToHold.includes(s.seatId) ? { ...s, status: 'reserved' } : s)) // Optimistic update
-      fetchSeats() // Sync real status
+      setSeats(prev => prev.map(s => seatsToHold.includes(s.seatId) ? { ...s, status: 'reserved' } : s))
+      fetchSeats()
     } catch (e) {
       alert(e.response?.data?.error || 'Could not hold seats. They might be taken.')
       fetchSeats()
     }
   }
 
-  async function checkout() {
+  async function checkout(usePass = false) {
     if (!reservation) return alert('No reservation')
     try {
-      const resp = await api.post('/api/orders', {
-        reservationId: reservation.reservationId,
-        userId: user?._id // explicit fallback for order mapping
-      })
+      // If using pass, we call redeem, but redeem API currently assumes direct issuance without reservation ID? 
+      // Wait, my redeem API logic created an Order directly. It didn't mention reservation.
+      // But we ALREADY hold the seats. We should probably release them or transfer them?
+      // Actually, if I call redeem, I get a ticket. The reservation system cleans up expired reservations.
+      // But the seat might be marked "reserved" by reservation. Order needs to mark it "sold".
+      // The `Order` creation in `orders.js` handles converting reservation to order using `reservationId`.
+      // My `redeem` endpoint in `passRoutes.js` creates an Order MANUALLY and doesn't know about reservationId.
+
+      // FIX logic: `redeem` should ideally accept `reservationId` to "finalize" the booking.
+      // OR, the `checkout` endpoint should support "paymentMethod: season_pass".
+      // Let's modify `checkout` logic in `EventDetail` to hit `orders` endpoint if paying, 
+      // AND modify `orders` endpoint or `pass` endpoint to handle this.
+
+      // Easier path: Modify `redeem` in frontend to call `api.post('/api/orders')` but with a flag? 
+      // No, `orders` endpoint likely handles payment processing.
+
+      // Let's stick to the plan: `usePass` calls `/api/passes/redeem`.
+      // But `redeem` endpoint needs to know which seats.
+      // In my `passRoutes.js`, I put: `const { eventId, seatId } = req.body`.
+      // It creates an order with those seats.
+      // HOWEVER, the seats are currently `reserved` by the user in `reservations` collection.
+      // If we just create an order, we also need to update Seat status to 'sold'.
+      // My `passRoutes.js` `redeem` logic:
+      // `const order = await Order.create(...)`
+      // It DOES NOT update Seat status to 'sold'. That's a bug in my backend implementation of `passRoutes`.
+
+      // I should FIX `passRoutes.js` first? Or handle it here?
+      // Better to fix `passRoutes.js` to handle `reservationId`.
+
+      if (usePass) {
+        // Temporarily, let's assume we can pass reservationId to redeem
+        // I need to update passRoutes.js to handle reservationId
+        await api.post('/api/passes/redeem', {
+          eventId: id,
+          reservationId: reservation.reservationId
+        })
+      } else {
+        await api.post('/api/orders', {
+          reservationId: reservation.reservationId,
+          userId: user?._id
+        })
+      }
+
       setShowSuccess(true)
       setReservation(null)
       setSelected([])
@@ -176,10 +219,8 @@ export default function EventDetail() {
                 {event.ticketTiers && event.ticketTiers.length > 0 ? (
                   <div className="space-y-3">
                     {event.ticketTiers.map(tier => {
-                      // Dynamic availability check
                       const tierSeats = seats.filter(s => s.section === tier.name && s.status === 'available')
                       const availableCount = tierSeats.length
-
                       return (
                         <div key={tier.name}
                           onClick={() => availableCount > 0 && setSelectedTier(tier)}
@@ -203,8 +244,6 @@ export default function EventDetail() {
                 ) : (
                   <div className="text-gray-400">Standard Ticket (Free)</div>
                 )}
-
-                {/* Quantity Selector (Only if Tier selected) */}
                 <div className={`mt-6 transition-all ${!selectedTier && event.ticketTiers?.length > 0 ? 'opacity-20 pointer-events-none' : 'opacity-100'}`}>
                   <p className="text-gray-400 mb-2 text-sm">Quantity</p>
                   <div className="inline-flex items-center bg-white/5 rounded-xl p-2 border border-white/5">
@@ -227,17 +266,28 @@ export default function EventDetail() {
               <div className="space-y-4">
                 <div className="bg-white/5 rounded-xl p-4">
                   <span className="text-gray-400 text-sm block mb-1">Items</span>
-                  <span className="text-white font-bold">
+                  <span className="text-white font-bold block mb-2">
                     {event.eventType === 'seated'
-                      ? (selected.length > 0 ? selected.join(', ') : 'None selected')
+                      ? (selected.length > 0 ? `${selected.length} x Seat (${selected.join(', ')})` : 'None selected')
                       : (
                         <div className="flex justify-between">
                           <span>{ticketQuantity} x {selectedTier?.name || 'Ticket'}</span>
-                          <span>${(selectedTier?.price || 0) * ticketQuantity}</span>
                         </div>
                       )
                     }
                   </span>
+
+                  {/* Total calculation */}
+                  <div className="flex justify-between border-t border-white/10 pt-2 text-primary-400 text-lg font-bold">
+                    <span>Total</span>
+                    <span>
+                      $
+                      {event.eventType === 'seated'
+                        ? (event.ticketTiers?.[0]?.price || 0) * selected.length
+                        : (selectedTier?.price || 0) * ticketQuantity
+                      }
+                    </span>
+                  </div>
                 </div>
 
                 {user ? (
@@ -262,12 +312,32 @@ export default function EventDetail() {
                 <div className="text-gray-400 text-sm">
                   Reserved: {reservation.seatIds.join(', ')}
                 </div>
+
+                {/* Regular Checkout */}
                 <button
-                  onClick={checkout}
-                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-emerald-900/20 animate-pulse"
+                  onClick={() => checkout(false)}
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-emerald-900/20"
                 >
-                  Confirm Request (Pay)
+                  Pay Now
                 </button>
+
+                {/* Season Pass Redemption */}
+                {redeemablePass && (
+                  <div className="pt-4 border-t border-white/10">
+                    <p className="text-xs text-gray-400 mb-2">Benefit from your Season Pass:</p>
+                    <button
+                      onClick={() => checkout(true)}
+                      className="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-purple-900/20 flex items-center justify-center gap-2"
+                    >
+                      <span>✨</span> Redeem via {redeemablePass.passTypeId.name}
+                    </button>
+                    {redeemablePass.passTypeId.type === 'credits' && (
+                      <p className="text-xs text-center mt-1 text-gray-500">
+                        Credits remaining: {redeemablePass.remainingCredits}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -5,8 +5,12 @@ const OrderSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: 'User' },
   eventId: { type: Schema.Types.ObjectId, ref: 'Event' },
   tickets: [{ seatId: String, price: Number }],
+  // New fields for Season Pass
+  orderType: { type: String, enum: ['ticket', 'season_pass'], default: 'ticket' },
+  passTypeId: { type: Schema.Types.ObjectId, ref: 'PassType' },
+
   total: Number,
-  paymentStatus: { type: String, enum: ['pending','paid','failed'], default: 'pending' }
+  paymentStatus: { type: String, enum: ['pending', 'paid', 'failed'], default: 'pending' }
 }, { timestamps: true })
 
 module.exports = mongoose.model('Order', OrderSchema)

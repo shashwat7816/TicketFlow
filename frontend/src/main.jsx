@@ -12,6 +12,8 @@ import CreateEvent from './pages/CreateEvent'
 import AdminDashboard from './pages/AdminDashboard'
 import MyTickets from './pages/MyTickets'
 import EditEvent from './pages/EditEvent'
+import SeasonPasses from './pages/SeasonPasses'
+import Support from './pages/Support'
 import './styles.css'
 
 createRoot(document.getElementById('root')).render(
@@ -28,6 +30,8 @@ createRoot(document.getElementById('root')).render(
               <Route path="login" element={<Login />} />
               <Route path="register" element={<Register />} />
               <Route path="create-event" element={<CreateEvent />} />
+              <Route path="memberships" element={<SeasonPasses />} />
+              <Route path="support" element={<Support />} />
               <Route path="admin" element={<AdminDashboard />} />
             </Route>
           </Routes>

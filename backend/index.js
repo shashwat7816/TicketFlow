@@ -10,6 +10,8 @@ const eventsRoutes = require('./routes/events')
 const reservationsRoutes = require('./routes/reservations')
 const ordersRoutes = require('./routes/orders')
 const adminRoutes = require('./routes/admin')
+const passRoutes = require('./routes/passRoutes')
+const supportRoutes = require('./routes/supportRoutes')
 const Event = require('./models/event')
 
 const app = express()
@@ -42,6 +44,8 @@ app.use('/api/events', eventsRoutes)
 app.use('/api/reservations', reservationsRoutes)
 app.use('/api/orders', ordersRoutes)
 app.use('/api/admin', adminRoutes)
+app.use('/api/passes', passRoutes)
+app.use('/api/support', supportRoutes)
 
 app.get('/', (req, res) => res.json({ status: 'ok' }))
 

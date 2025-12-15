@@ -36,6 +36,14 @@ export default function App() {
                     My Tickets
                     <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-500 transition-all group-hover:w-full"></span>
                   </Link>
+                  <Link to="/memberships" className="text-sm font-medium text-gray-400 hover:text-white transition-colors relative group">
+                    Memberships
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-500 transition-all group-hover:w-full"></span>
+                  </Link>
+                  <Link to="/support" className="text-sm font-medium text-gray-400 hover:text-white transition-colors relative group">
+                    Support
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-500 transition-all group-hover:w-full"></span>
+                  </Link>
                   <Link to="/create-event" className="text-sm font-medium text-gray-400 hover:text-white transition-colors relative group">
                     Host Event
                     <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-500 transition-all group-hover:w-full"></span>

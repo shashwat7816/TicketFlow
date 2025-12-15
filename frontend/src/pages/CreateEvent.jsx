@@ -210,16 +210,43 @@ export default function CreateEvent() {
                                     </div>
                                 ) : (
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">Total Number of Seats</label>
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            value={formData.capacity}
-                                            onChange={e => setFormData({ ...formData, capacity: e.target.value })}
-                                            className="w-full bg-dark-bg/60 border border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:border-primary-500/50 focus:bg-dark-bg/80 transition-all text-white placeholder-gray-600"
-                                            placeholder="e.g. 100"
-                                            required
-                                        />
+                                        <div className="mb-4">
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">Total Number of Seats</label>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                value={formData.capacity}
+                                                onChange={e => {
+                                                    const qty = parseInt(e.target.value) || 0
+                                                    setFormData({
+                                                        ...formData,
+                                                        capacity: e.target.value,
+                                                        ticketTiers: [{ name: 'Standard Seat', price: formData.ticketTiers?.[0]?.price || 0, quantity: qty }]
+                                                    })
+                                                }}
+                                                className="w-full bg-dark-bg/60 border border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:border-primary-500/50 focus:bg-dark-bg/80 transition-all text-white placeholder-gray-600"
+                                                placeholder="e.g. 100"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">Price per Seat ($)</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                value={formData.ticketTiers?.[0]?.price || ''}
+                                                onChange={e => {
+                                                    const price = parseInt(e.target.value) || 0
+                                                    setFormData({
+                                                        ...formData,
+                                                        ticketTiers: [{ name: 'Standard Seat', price: price, quantity: parseInt(formData.capacity) || 0 }]
+                                                    })
+                                                }}
+                                                className="w-full bg-dark-bg/60 border border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:border-primary-500/50 focus:bg-dark-bg/80 transition-all text-white placeholder-gray-600"
+                                                placeholder="e.g. 50"
+                                                required
+                                            />
+                                        </div>
                                         <p className="text-xs text-gray-500 mt-2">We'll generate a seating chart based on this capacity.</p>
                                     </div>
                                 )}
