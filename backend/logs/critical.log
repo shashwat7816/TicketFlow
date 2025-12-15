@@ -1,0 +1,48 @@
+[2025-12-14T10:16:21.648Z] SIGINT
+[2025-12-14T11:26:58.795Z] uncaughtException: Error: listen EADDRINUSE: address already in use 0.0.0.0:4000
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at node:net:2206:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+
+[2025-12-14T11:35:16.296Z] uncaughtException: Error: listen EADDRINUSE: address already in use 0.0.0.0:4000
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at node:net:2206:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+
+[2025-12-14T11:35:58.973Z] unhandledRejection: MongoServerSelectionError: Server selection timed out after 30000 ms
+    at Timeout._onTimeout (C:\Users\Shashwat Kashyap\Desktop\projectpm\backend\node_modules\mongodb\lib\sdam\topology.js:278:38)
+    at listOnTimeout (node:internal/timers:588:17)
+    at process.processTimers (node:internal/timers:523:7)
+
+[2025-12-14T11:35:59.188Z] unhandledRejection: MongoServerSelectionError: Server selection timed out after 30000 ms
+    at Timeout._onTimeout (C:\Users\Shashwat Kashyap\Desktop\projectpm\backend\node_modules\mongodb\lib\sdam\topology.js:278:38)
+    at listOnTimeout (node:internal/timers:588:17)
+    at process.processTimers (node:internal/timers:523:7)
+
+[2025-12-14T11:46:11.930Z] uncaughtException: Error: listen EADDRINUSE: address already in use 0.0.0.0:4000
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at node:net:2206:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+
+[2025-12-14T11:46:12.141Z] uncaughtException: Error: listen EADDRINUSE: address already in use 0.0.0.0:4000
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at node:net:2206:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+
+[2025-12-14T11:52:45.983Z] uncaughtException: Error: listen EADDRINUSE: address already in use 0.0.0.0:4000
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at node:net:2206:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+
+[2025-12-14T13:23:05.331Z] uncaughtException: Error: listen EADDRINUSE: address already in use 0.0.0.0:4000
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at node:net:2206:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+
+[2025-12-15T09:00:47.284Z] SIGINT
