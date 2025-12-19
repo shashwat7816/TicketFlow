@@ -1,60 +1,64 @@
-# Ticketflow — Local run instructions
+# 🎟️ TicketFlow — Premium Venue Ticketing System
 
-This repository contains a simple ticketing app (Vite/React frontend and Node/Express backend with MongoDB).
+> A modern, full-featured ticketing platform for venues to sell events, manage seating, and handle customer support.
 
-## Quick start (Docker) 🔧
+## ✨ Key Features
 
-Requirements: Docker Desktop (Linux containers) running.
+-   **🤖 AI Chatbot Assistant**: Built-in intelligent assistant for user queries (Refunds, Hosting, Pricing).
+-   **💎 Premium UI**: Modern Dark Mode with Glassmorphism aesthetics and smooth animations.
+-   **📊 Real-Time Analytics**: Admin Dashboard with real revenue tracking from actual sales.
+-   **🎫 Flexible Ticketing**: Support for both **Seated** (choose your seat) and **General Admission** events.
+-   **🔐 Role-Based Access**: Secure Admin and User roles with JWT authentication.
 
-1. Start the stack:
+## 🛠️ Tech Stack
 
-```powershell
-docker compose up -d --build
-```
+-   **Frontend**: React, Vite, Tailwind CSS (Glassmorphism).
+-   **Backend**: Node.js, Express.js.
+-   **Database**: MongoDB.
 
-This will start a single-node MongoDB replica set (needed for transaction testing), the backend on port `4000`, and the frontend on port `3000`.
+## 🚀 Getting Started
 
-2. Seed the database (once):
+### Prerequisites
+-   Node.js (v16+)
+-   MongoDB (Running locally or Atlas URI)
 
-```powershell
-docker compose run --rm backend npm run seed
-```
+### 1. Backend Setup
 
-3. Open the frontend: http://localhost:3000 and test the site. The backend API is at http://localhost:4000.
-
-## Local development (no Docker)
-
-Start Mongo locally or use `docker compose -f docker-compose.mongo-repl.yml up -d`.
-
-Start the backend in dev mode (auto-restarts on change):
-
-```powershell
+```bash
 cd backend
 npm install
+```
+
+Create a `.env` file in `backend/` (copy from `.env.example`):
+```env
+PORT=4000
+MONGO_URI=mongodb://localhost:27017/ticketflow
+JWT_SECRET=your_super_secret_key
+```
+
+Start the server:
+```bash
+npm run seed  # (Optional) Populates DB with sample events & admin user
 npm run dev
 ```
 
-Start the frontend dev server:
+### 2. Frontend Setup
 
-```powershell
+```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-Seed DB (local):
+Visit `http://localhost:3000` to start booking!
 
-```powershell
-cd backend
-npm run seed
-```
+## 🧪 Admin Access (Seeded)
+-   **Email**: `admin@example.com`
+-   **Password**: `admin123`
 
-## Troubleshooting
-- If you see connection failures during heavy stress tests, check `backend/logs/critical.log`, `backend/logs/out.log`, and `backend/logs/err.log` for diagnostics.
-
-If you'd like, I can also add a GitHub Actions workflow to run the concurrency tests in CI using the same docker-compose setup. Let me know and I'll add it next.
-# 🎟️ TicketFlow — Venue Ticketing System
-
-> A full-featured ticketing system for venues to sell event tickets, manage seating arrangements, handle customer support, and manage season passes. Frontend: Vite + React (JavaScript). Backend: Node.js (Express) + MongoDB (Atlas recommended for deployment).
-
-Abbreviated README — full documentation in `docs/` and per-folder README files. Set `MONGO_URI` in `backend/.env` to your MongoDB Atlas connection string before deploying to production.
+## 🤝 Contributing
+1.  Fork the repo
+2.  Create your feature branch (`git checkout -b feature/amazing-feature`)
+3.  Commit your changes (`git commit -m 'Add some amazing feature'`)
+4.  Push to the branch (`git push origin feature/amazing-feature`)
+5.  Open a Pull Request
