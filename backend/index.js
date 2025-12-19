@@ -18,7 +18,7 @@ const app = express()
 app.use(helmet())
 app.use(morgan('dev'))
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3001'],
+  origin: true, // Allow all origins for Vercel/Render
   credentials: true
 }))
 app.use(express.json())
