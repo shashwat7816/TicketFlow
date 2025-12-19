@@ -35,12 +35,36 @@ router.post('/', async (req, res) => {
     // convert seats status to sold (per-seat docs)
     await Seat.updateMany({ eventId: r.eventId, seatId: { $in: r.seatIds } }, { $set: { status: 'sold' } })
 
-    const tickets = r.seatIds.map(sid => ({ seatId: sid, price: 0 }))
+    // Calculate price based on event type / tiers
+    let total = 0
+    const seatsDocs = await Seat.find({ eventId: r.eventId, seatId: { $in: r.seatIds } })
+    const seatMap = {}
+    seatsDocs.forEach(s => seatMap[s.seatId] = s)
+
+    const tickets = r.seatIds.map(sid => {
+      let price = 0
+      const s = seatMap[sid]
+      if (s) {
+        if (event.eventType === 'seated') {
+          // For seated, we currently assume single price tier or first tier
+          if (event.ticketTiers && event.ticketTiers.length > 0) price = event.ticketTiers[0].price
+        } else {
+          // General: match section to tier name
+          if (event.ticketTiers) {
+            const tier = event.ticketTiers.find(t => t.name === s.section)
+            if (tier) price = tier.price
+          }
+        }
+      }
+      total += price
+      return { seatId: sid, price }
+    })
+
     const order = await Order.create({
       userId: orderUserId,
       eventId: r.eventId,
       tickets,
-      total: 0,
+      total,
       paymentStatus: 'paid'
     })
 

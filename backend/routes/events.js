@@ -29,13 +29,27 @@ router.post('/', async (req, res) => {
   if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'missing token' })
   try {
     const payload = jwt.verify(auth.split(' ')[1], process.env.JWT_SECRET)
+    const user = await require('../models/user').findById(payload.id)
+    if (!user || !user.roles.includes('admin')) {
+      return res.status(403).json({ error: 'admins only' })
+    }
+
     // Create event
-    const { name, description, venue, date, bannerUrl, eventType, capacity, ticketTiers } = req.body
+    const { name, description, venue, date, bannerUrl, eventType, capacity, ticketTiers, rows: reqRows, cols: reqCols } = req.body
 
     // Calculate capacity from tiers if general
     let finalCapacity = parseInt(capacity) || 0
     if (eventType === 'general' && Array.isArray(ticketTiers)) {
       finalCapacity = ticketTiers.reduce((acc, t) => acc + (parseInt(t.quantity) || 0), 0)
+    }
+
+    // For seated, calculate capacity from rows * cols
+    let seatedRows = 0
+    let seatedCols = 0
+    if (eventType === 'seated') {
+      seatedRows = parseInt(reqRows) || 10
+      seatedCols = parseInt(reqCols) || 10
+      finalCapacity = seatedRows * seatedCols
     }
 
     const event = await Event.create({
@@ -56,24 +70,23 @@ router.post('/', async (req, res) => {
       const seats = []
       if (event.eventType === 'seated') {
         // Seated: Row/Col
-        const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
-        let rowIdx = 0
-        let seatNum = 1
+        const rowLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+        // Support more than 26 rows? 'AA', 'AB'... for now let's stick to simple labeling or extend if needed.
+        // Let's stick to A..Z then A1..Z1 if index > 25? Keeping it simple for now.
 
-        for (let i = 0; i < event.capacity; i++) {
-          const rowLabel = rows[rowIdx % rows.length] + (Math.floor(rowIdx / rows.length) > 0 ? Math.floor(rowIdx / rows.length) : '')
-          seats.push({
-            eventId: event._id,
-            seatId: `${rowLabel}-${seatNum}`,
-            section: 'General',
-            row: rowLabel,
-            number: seatNum.toString(),
-            status: 'available'
-          })
-          seatNum++
-          if (seatNum > 10) {
-            seatNum = 1
-            rowIdx++
+        let totalSeatsGenerated = 0
+        for (let r = 0; r < seatedRows; r++) {
+          const rowLabel = rowLabels[r % rowLabels.length] + (Math.floor(r / rowLabels.length) > 0 ? Math.floor(r / rowLabels.length) : '')
+          for (let c = 1; c <= seatedCols; c++) {
+            seats.push({
+              eventId: event._id,
+              seatId: `${rowLabel}-${c}`,
+              section: 'General', // Or make this selectable?
+              row: rowLabel,
+              number: c.toString(),
+              status: 'available'
+            })
+            totalSeatsGenerated++
           }
         }
       } else {
@@ -117,8 +130,8 @@ router.post('/', async (req, res) => {
 
     res.status(201).json(event)
   } catch (e) {
-    console.error(e)
-    res.status(401).json({ error: 'invalid token or server error' })
+    console.error('Create Event Error:', e)
+    res.status(401).json({ error: 'invalid token or server error', details: e.message })
   }
 })
 

@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import { Outlet, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from './auth/AuthProvider'
+import ChatWidget from './components/ChatWidget'
 
 export default function App() {
-  const { user, logout } = useAuth()
+  const { user, logout, loading } = useAuth()
   const nav = useNavigate()
 
   async function handleLogout() {
@@ -30,7 +31,13 @@ export default function App() {
                 Events
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-500 transition-all group-hover:w-full"></span>
               </Link>
-              {user ? (
+              {loading ? (
+                // Loading skeleton for auth section
+                <div className="flex items-center gap-4">
+                  <div className="h-8 w-20 bg-white/5 rounded animate-pulse"></div>
+                  <div className="h-10 w-24 bg-white/10 rounded-xl animate-pulse"></div>
+                </div>
+              ) : user ? (
                 <>
                   <Link to="/my-tickets" className="text-sm font-medium text-gray-400 hover:text-white transition-colors relative group">
                     My Tickets
@@ -44,10 +51,12 @@ export default function App() {
                     Support
                     <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-500 transition-all group-hover:w-full"></span>
                   </Link>
-                  <Link to="/create-event" className="text-sm font-medium text-gray-400 hover:text-white transition-colors relative group">
-                    Host Event
-                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-500 transition-all group-hover:w-full"></span>
-                  </Link>
+                  {user.roles?.includes('admin') && (
+                    <Link to="/create-event" className="text-sm font-medium text-gray-400 hover:text-white transition-colors relative group">
+                      Host Event
+                      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-500 transition-all group-hover:w-full"></span>
+                    </Link>
+                  )}
                   {user.roles?.includes('admin') && (
                     <Link to="/admin" className="text-sm font-medium text-primary-400 hover:text-primary-300 transition-colors">Admin</Link>
                   )}
@@ -96,7 +105,9 @@ export default function App() {
             <h4 className="text-white font-bold mb-6">Platform</h4>
             <ul className="space-y-3 text-sm text-gray-500">
               <li><Link to="/" className="hover:text-primary-400 transition-colors">Browse Events</Link></li>
-              <li><Link to="/create-event" className="hover:text-primary-400 transition-colors">Host an Event</Link></li>
+              {user && user.roles?.includes('admin') && (
+                <li><Link to="/create-event" className="hover:text-primary-400 transition-colors">Host an Event</Link></li>
+              )}
               <li><a href="#" className="hover:text-primary-400 transition-colors">Pricing</a></li>
             </ul>
           </div>
@@ -124,6 +135,7 @@ export default function App() {
           <p>© {new Date().getFullYear()} TicketFlow Inc. All rights reserved.</p>
         </div>
       </footer>
+      <ChatWidget />
     </div>
   )
 }

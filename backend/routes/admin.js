@@ -4,9 +4,24 @@ const { authMiddleware, requireRole } = require('../middleware/auth')
 
 const User = require('../models/user')
 const Event = require('../models/event')
+const Order = require('../models/order')
 
 router.get('/health', authMiddleware, requireRole('admin'), (req, res) => {
   res.json({ ok: true, msg: 'admin healthy' })
+})
+
+router.get('/stats', authMiddleware, requireRole('admin'), async (req, res) => {
+  try {
+    const revenueAgg = await Order.aggregate([
+      { $match: { paymentStatus: 'paid' } },
+      { $group: { _id: null, total: { $sum: '$total' } } }
+    ])
+    const totalRevenue = revenueAgg[0] ? revenueAgg[0].total : 0
+    res.json({ totalRevenue })
+  } catch (e) {
+    console.error(e)
+    res.status(500).json({ error: 'internal' })
+  }
 })
 
 // === USER MANAGEMENT ===

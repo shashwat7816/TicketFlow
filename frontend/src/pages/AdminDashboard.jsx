@@ -15,9 +15,10 @@ export default function AdminDashboard() {
 
     async function loadData() {
         try {
-            const [evRes, usRes] = await Promise.all([
+            const [evRes, usRes, statsRes] = await Promise.all([
                 api.get('/api/events'),
-                api.get('/api/admin/users') // Now implemented
+                api.get('/api/admin/users'),
+                api.get('/api/admin/stats')
             ])
             setEvents(evRes.data)
             setUsers(usRes.data)
@@ -25,7 +26,7 @@ export default function AdminDashboard() {
             setStats({
                 totalEvents: evRes.data.length,
                 totalUsers: usRes.data.length,
-                revenue: '$0 (Demo)'
+                revenue: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(statsRes.data.totalRevenue)
             })
         } catch (e) { console.error(e) }
     }
@@ -33,20 +34,27 @@ export default function AdminDashboard() {
     async function deleteEvent(id) {
         if (!window.confirm('Delete this event?')) return
         try {
+            // Optimistic update
+            setEvents(prev => prev.filter(e => e._id !== id))
             await api.delete(`/api/admin/events/${id}`)
+            alert('Event deleted successfully')
             loadData()
         } catch (e) {
             alert('Failed to delete event: ' + (e.response?.data?.error || e.message))
+            loadData() // Re-fetch to sync state if failed
         }
     }
 
     async function deleteUser(id) {
         if (!window.confirm('Delete this user?')) return
         try {
+            setUsers(prev => prev.filter(u => u._id !== id))
             await api.delete(`/api/admin/users/${id}`)
+            alert('User deleted successfully')
             loadData()
         } catch (e) {
             alert('Failed to delete user: ' + (e.response?.data?.error || e.message))
+            loadData()
         }
     }
 
@@ -59,12 +67,22 @@ export default function AdminDashboard() {
                 {[
                     { label: 'Total Events', value: stats?.totalEvents || 0, color: 'from-blue-500 to-cyan-400' },
                     { label: 'Active Users', value: stats?.totalUsers || 0, color: 'from-purple-500 to-pink-400' },
-                    { label: 'Total Revenue', value: stats?.revenue || '-', color: 'from-emerald-500 to-teal-400' }
+                    {
+                        label: 'Total Revenue',
+                        value: stats?.revenue && stats.revenue !== '-' ? stats.revenue : '$0.00',
+                        color: 'from-emerald-500 to-teal-400',
+                        isRevenue: true
+                    }
                 ].map((stat, i) => (
                     <div key={i} className="glass-panel p-6 relative overflow-hidden group">
                         <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${stat.color} opacity-10 rounded-full blur-2xl transform translate-x-10 -translate-y-10 group-hover:scale-110 transition-transform`}></div>
                         <h3 className="text-gray-400 text-sm font-medium mb-2">{stat.label}</h3>
                         <p className="text-3xl font-bold text-white">{stat.value}</p>
+                        {stat.isRevenue && (
+                            <div className="mt-4 h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                                <div className="h-full w-1/3 bg-emerald-500 animate-pulse"></div>
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>

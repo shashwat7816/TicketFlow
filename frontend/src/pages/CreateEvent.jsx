@@ -12,6 +12,8 @@ export default function CreateEvent() {
         date: '',
         bannerUrl: '',
         eventType: 'general', // 'seated' or 'general'
+        rows: '',
+        cols: '',
         capacity: '',
         ticketTiers: [{ name: 'General Admission', price: 0, quantity: 100 }]
     })
@@ -210,25 +212,73 @@ export default function CreateEvent() {
                                     </div>
                                 ) : (
                                     <div>
-                                        <div className="mb-4">
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">Total Number of Seats</label>
-                                            <input
-                                                type="number"
-                                                min="1"
-                                                value={formData.capacity}
-                                                onChange={e => {
-                                                    const qty = parseInt(e.target.value) || 0
-                                                    setFormData({
-                                                        ...formData,
-                                                        capacity: e.target.value,
-                                                        ticketTiers: [{ name: 'Standard Seat', price: formData.ticketTiers?.[0]?.price || 0, quantity: qty }]
-                                                    })
-                                                }}
-                                                className="w-full bg-dark-bg/60 border border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:border-primary-500/50 focus:bg-dark-bg/80 transition-all text-white placeholder-gray-600"
-                                                placeholder="e.g. 100"
-                                                required
-                                            />
-                                        </div>
+                                        {formData.eventType === 'seated' ? (
+                                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-300 mb-2">Number of Rows</label>
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        max="26"
+                                                        value={formData.rows || ''}
+                                                        onChange={e => {
+                                                            const r = parseInt(e.target.value) || 0
+                                                            const c = parseInt(formData.cols) || 0
+                                                            setFormData({
+                                                                ...formData,
+                                                                rows: e.target.value,
+                                                                capacity: r * c,
+                                                                ticketTiers: [{ name: 'Standard Seat', price: formData.ticketTiers?.[0]?.price || 0, quantity: r * c }]
+                                                            })
+                                                        }}
+                                                        className="w-full bg-dark-bg/60 border border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:border-primary-500/50 focus:bg-dark-bg/80 transition-all text-white placeholder-gray-600"
+                                                        placeholder="e.g. 10"
+                                                        required
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-300 mb-2">Seats per Row</label>
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        value={formData.cols || ''}
+                                                        onChange={e => {
+                                                            const c = parseInt(e.target.value) || 0
+                                                            const r = parseInt(formData.rows) || 0
+                                                            setFormData({
+                                                                ...formData,
+                                                                cols: e.target.value,
+                                                                capacity: r * c,
+                                                                ticketTiers: [{ name: 'Standard Seat', price: formData.ticketTiers?.[0]?.price || 0, quantity: r * c }]
+                                                            })
+                                                        }}
+                                                        className="w-full bg-dark-bg/60 border border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:border-primary-500/50 focus:bg-dark-bg/80 transition-all text-white placeholder-gray-600"
+                                                        placeholder="e.g. 12"
+                                                        required
+                                                    />
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="mb-4">
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">Total Number of Seats</label>
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    value={formData.capacity}
+                                                    onChange={e => {
+                                                        const qty = parseInt(e.target.value) || 0
+                                                        setFormData({
+                                                            ...formData,
+                                                            capacity: e.target.value,
+                                                            ticketTiers: [{ name: 'Standard Seat', price: formData.ticketTiers?.[0]?.price || 0, quantity: qty }]
+                                                        })
+                                                    }}
+                                                    className="w-full bg-dark-bg/60 border border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:border-primary-500/50 focus:bg-dark-bg/80 transition-all text-white placeholder-gray-600"
+                                                    placeholder="e.g. 100"
+                                                    required
+                                                />
+                                            </div>
+                                        )}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-300 mb-2">Price per Seat ($)</label>
                                             <input
@@ -247,7 +297,11 @@ export default function CreateEvent() {
                                                 required
                                             />
                                         </div>
-                                        <p className="text-xs text-gray-500 mt-2">We'll generate a seating chart based on this capacity.</p>
+                                        <p className="text-xs text-gray-500 mt-2">
+                                            {formData.eventType === 'seated'
+                                                ? `Total Capacity: ${formData.capacity || 0} seats`
+                                                : "We'll generate a seating chart based on this capacity."}
+                                        </p>
                                     </div>
                                 )}
                             </div>

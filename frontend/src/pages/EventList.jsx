@@ -41,7 +41,7 @@ export default function EventList() {
           </p>
 
           {/* Search Bar */}
-          <div className="max-w-3xl mx-auto bg-white/10 backdrop-blur-md p-2 rounded-2xl border border-white/20 flex flex-col md:flex-row gap-2">
+          <div className="max-w-3xl mx-auto bg-white/10 backdrop-blur-md p-2 rounded-2xl border border-white/20 flex flex-col md:flex-row gap-2 focus-within:border-primary-400/50 focus-within:bg-white/15 transition-all shadow-xl">
             <div className="flex-grow relative">
               <svg className="w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
               <input
@@ -71,7 +71,7 @@ export default function EventList() {
       {/* Events Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {filteredEvents.map(e => (
-          <div key={e._id} className="group glass-panel rounded-2xl overflow-hidden hover:scale-[1.02] transition-all duration-300 hover:shadow-2xl hover:shadow-primary-900/20 flex flex-col h-full border border-white/5 hover:border-primary-500/30">
+          <div key={e._id} className="group glass-panel rounded-2xl overflow-hidden hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_10px_40px_-10px_rgba(14,165,233,0.3)] flex flex-col h-full border border-white/5 hover:border-primary-500/50">
             <div className="h-56 relative overflow-hidden bg-dark-bg">
               {e.bannerUrl ? (
                 <img src={e.bannerUrl} alt={e.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />

@@ -6,9 +6,9 @@
     "dev": "nodemon index.js",
     "start": "node index.js",
     "seed": "node scripts/seed.js",
-    "test:concurrency": "mocha tests/concurrency.test.js --reporter spec --timeout 20000"
-    ,"test:concurrency:multi": "mocha tests/multi_seat.test.js --reporter spec --timeout 20000"
-    ,"stress:concurrency": "node scripts/stress_harness.js"
+    "test:concurrency": "mocha tests/concurrency.test.js --reporter spec --timeout 20000",
+    "test:concurrency:multi": "mocha tests/multi_seat.test.js --reporter spec --timeout 20000",
+    "stress:concurrency": "node scripts/stress_harness.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.0",
@@ -23,8 +23,8 @@
   },
   "devDependencies": {
     "axios": "^1.13.2",
-    "nodemon": "^2.0.22",
+    "chai": "^4.3.7",
     "mocha": "^10.2.0",
-    "chai": "^4.3.7"
+    "nodemon": "^2.0.22"
   }
 }
