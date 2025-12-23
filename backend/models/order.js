@@ -10,7 +10,9 @@ const OrderSchema = new Schema({
   passTypeId: { type: Schema.Types.ObjectId, ref: 'PassType' },
 
   total: Number,
-  paymentStatus: { type: String, enum: ['pending', 'paid', 'failed'], default: 'pending' }
+  status: { type: String, enum: ['reserved', 'pending_payment', 'paid', 'cancelled', 'active'], default: 'reserved' },
+  expiresAt: { type: Date, index: true }, // For temporary reservations
+  paymentStatus: { type: String, enum: ['pending', 'paid', 'failed', 'paid_by_pass'], default: 'pending' }
 }, { timestamps: true })
 
 module.exports = mongoose.model('Order', OrderSchema)

@@ -19,6 +19,25 @@ export default function EventDetail() {
   const [myPasses, setMyPasses] = useState([])
   const [redeemablePass, setRedeemablePass] = useState(null)
 
+  // Custom Timer Logic
+  const [timeLeft, setTimeLeft] = useState('5:00')
+  useEffect(() => {
+    if (!reservation?.expiresAt) return
+    const interval = setInterval(() => {
+      const msLeft = new Date(reservation.expiresAt) - new Date()
+      if (msLeft <= 0) {
+        setTimeLeft('Expired')
+        setReservation(null) // Clear reservation on expiry
+        fetchSeats()
+      } else {
+        const mins = Math.floor(msLeft / 60000)
+        const secs = Math.floor((msLeft % 60000) / 1000)
+        setTimeLeft(`${mins}:${secs.toString().padStart(2, '0')}`)
+      }
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [reservation])
+
   useEffect(() => {
     fetchData()
     if (user) fetchMyPasses()
@@ -84,45 +103,16 @@ export default function EventDetail() {
   async function checkout(usePass = false) {
     if (!reservation) return alert('No reservation')
     try {
-      // If using pass, we call redeem, but redeem API currently assumes direct issuance without reservation ID? 
-      // Wait, my redeem API logic created an Order directly. It didn't mention reservation.
-      // But we ALREADY hold the seats. We should probably release them or transfer them?
-      // Actually, if I call redeem, I get a ticket. The reservation system cleans up expired reservations.
-      // But the seat might be marked "reserved" by reservation. Order needs to mark it "sold".
-      // The `Order` creation in `orders.js` handles converting reservation to order using `reservationId`.
-      // My `redeem` endpoint in `passRoutes.js` creates an Order MANUALLY and doesn't know about reservationId.
-
-      // FIX logic: `redeem` should ideally accept `reservationId` to "finalize" the booking.
-      // OR, the `checkout` endpoint should support "paymentMethod: season_pass".
-      // Let's modify `checkout` logic in `EventDetail` to hit `orders` endpoint if paying, 
-      // AND modify `orders` endpoint or `pass` endpoint to handle this.
-
-      // Easier path: Modify `redeem` in frontend to call `api.post('/api/orders')` but with a flag? 
-      // No, `orders` endpoint likely handles payment processing.
-
-      // Let's stick to the plan: `usePass` calls `/api/passes/redeem`.
-      // But `redeem` endpoint needs to know which seats.
-      // In my `passRoutes.js`, I put: `const { eventId, seatId } = req.body`.
-      // It creates an order with those seats.
-      // HOWEVER, the seats are currently `reserved` by the user in `reservations` collection.
-      // If we just create an order, we also need to update Seat status to 'sold'.
-      // My `passRoutes.js` `redeem` logic:
-      // `const order = await Order.create(...)`
-      // It DOES NOT update Seat status to 'sold'. That's a bug in my backend implementation of `passRoutes`.
-
-      // I should FIX `passRoutes.js` first? Or handle it here?
-      // Better to fix `passRoutes.js` to handle `reservationId`.
-
       if (usePass) {
-        // Temporarily, let's assume we can pass reservationId to redeem
-        // I need to update passRoutes.js to handle reservationId
+        // Updated passRoutes will be needed to handle reservationId
         await api.post('/api/passes/redeem', {
           eventId: id,
-          reservationId: reservation.reservationId
+          reservationId: reservation.reservationId // This is now also the orderId
         })
       } else {
+        // Finalize the reserved order
         await api.post('/api/orders', {
-          reservationId: reservation.reservationId,
+          reservationId: reservation.reservationId, // This triggers finalizeOrder in backend
           userId: user?._id
         })
       }
@@ -307,7 +297,7 @@ export default function EventDetail() {
             ) : (
               <div className="space-y-4">
                 <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-xl">
-                  Seats Reserved! Expires in 5:00
+                  Seats Reserved! Expires in <span className="font-mono text-xl font-bold ml-1">{timeLeft}</span>
                 </div>
                 <div className="text-gray-400 text-sm">
                   Reserved: {reservation.seatIds.join(', ')}

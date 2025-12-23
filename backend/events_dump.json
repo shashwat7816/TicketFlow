@@ -1,0 +1,116 @@
+[
+  {
+    "_id": "6944ef2d93e8208fd81409ac",
+    "name": "FutureTech Summit 2026",
+    "bannerUrl": "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop",
+    "eventType": "general",
+    "ticketTiers": [
+      {
+        "name": "Early Bird",
+        "price": 299,
+        "quantity": 100,
+        "_id": "6944ef2d93e8208fd81409ad"
+      },
+      {
+        "name": "Standard Access",
+        "price": 499,
+        "quantity": 200,
+        "_id": "6944ef2d93e8208fd81409ae"
+      },
+      {
+        "name": "VIP Experience",
+        "price": 999,
+        "quantity": 50,
+        "_id": "6944ef2d93e8208fd81409af"
+      }
+    ]
+  },
+  {
+    "_id": "6944ef2d93e8208fd8140c41",
+    "name": "Global Street Food Festival",
+    "bannerUrl": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1974&auto=format&fit=crop",
+    "eventType": "general",
+    "ticketTiers": [
+      {
+        "name": "General Entry",
+        "price": 25,
+        "quantity": 500,
+        "_id": "6944ef2d93e8208fd8140c42"
+      },
+      {
+        "name": "Tasting Pass",
+        "price": 65,
+        "quantity": 200,
+        "_id": "6944ef2d93e8208fd8140c43"
+      }
+    ]
+  },
+  {
+    "_id": "69497a75b45313689ae4684b",
+    "name": "Symphony Orchestra Night",
+    "bannerUrl": "https://images.unsplash.com/photo-1465847899078-b413929f7120?q=80&w=2070&auto=format&fit=crop",
+    "eventType": "seated",
+    "ticketTiers": [
+      {
+        "name": "Standard",
+        "price": 120,
+        "quantity": 30,
+        "_id": "69497a75b45313689ae4684c"
+      }
+    ]
+  },
+  {
+    "_id": "69497a75b45313689ae4686e",
+    "name": "Broadway Classics: The Musical",
+    "bannerUrl": "https://images.unsplash.com/photo-1503095392237-fa19b2461658?q=80&w=2071&auto=format&fit=crop",
+    "eventType": "seated",
+    "ticketTiers": [
+      {
+        "name": "Front Row",
+        "price": 85,
+        "quantity": 40,
+        "_id": "69497a75b45313689ae4686f"
+      }
+    ]
+  },
+  {
+    "_id": "69497a75b45313689ae4689b",
+    "name": "Neon Haze Festival 2025",
+    "bannerUrl": "https://images.unsplash.com/photo-1470229722913-7ea9959fa72cb?q=80&w=2070&auto=format&fit=crop",
+    "eventType": "general",
+    "ticketTiers": [
+      {
+        "name": "General Admission",
+        "price": 65,
+        "quantity": 400,
+        "_id": "69497a75b45313689ae4689c"
+      },
+      {
+        "name": "VIP Pit",
+        "price": 150,
+        "quantity": 100,
+        "_id": "69497a75b45313689ae4689d"
+      }
+    ]
+  },
+  {
+    "_id": "69497a78b45313689ae46a94",
+    "name": "Global Tech Summit",
+    "bannerUrl": "https://images.unsplash.com/photo-1544531586-fde5298cdd40?q=80&w=2070&auto=format&fit=crop",
+    "eventType": "general",
+    "ticketTiers": [
+      {
+        "name": "Early Bird",
+        "price": 199,
+        "quantity": 20,
+        "_id": "69497a78b45313689ae46a95"
+      },
+      {
+        "name": "Standard",
+        "price": 299,
+        "quantity": 80,
+        "_id": "69497a78b45313689ae46a96"
+      }
+    ]
+  }
+]

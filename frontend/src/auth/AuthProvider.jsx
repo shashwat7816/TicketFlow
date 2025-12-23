@@ -41,12 +41,24 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     // try to fetch /me if no user but there might be a cookie
+    // try to restore session
     (async () => {
       try {
-        const resp = await api.get('/api/auth/me')
-        setUser(resp.data)
-      } catch (e) { /* ignore */ }
-      finally { setLoading(false) }
+        // Try refresh first to get a token if we have a cookie
+        const refResp = await axios.post(import.meta.env.VITE_API_URL + '/api/auth/refresh', {}, { withCredentials: true })
+        const newToken = refResp.data.accessToken
+        setAccessToken(newToken)
+
+        // Now fetch user details using the new token
+        const meResp = await axios.get(import.meta.env.VITE_API_URL + '/api/auth/me', {
+          headers: { Authorization: 'Bearer ' + newToken }
+        })
+        setUser(meResp.data)
+      } catch (e) {
+        // silently fail if no session
+      } finally {
+        setLoading(false)
+      }
     })()
   }, [])
 

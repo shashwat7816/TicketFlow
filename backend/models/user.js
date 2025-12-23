@@ -6,7 +6,12 @@ const UserSchema = new Schema({
   passwordHash: String,
   roles: { type: [String], default: ['customer'] },
   name: String,
-  seasonPasses: [{ type: Schema.Types.ObjectId, ref: 'SeasonPass' }]
+  seasonPasses: [{ type: Schema.Types.ObjectId, ref: 'SeasonPass' }],
+  refreshTokens: [{
+    token: String,
+    expiresAt: Date,
+    createdAt: { type: Date, default: Date.now }
+  }]
 }, { timestamps: true })
 
 module.exports = mongoose.model('User', UserSchema)

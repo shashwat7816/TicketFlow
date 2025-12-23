@@ -100,6 +100,14 @@ export default function EventList() {
                 <div className="text-xl text-white font-black">{new Date(e.date).getDate()}</div>
               </div>
 
+              {/* Price Badge */}
+              <div className="absolute -top-6 right-6 bg-emerald-500/20 backdrop-blur-md border border-emerald-500/30 rounded-lg p-2 text-center min-w-[80px] shadow-lg">
+                <div className="text-xs text-emerald-400 font-bold uppercase">Starts at</div>
+                <div className="text-xl text-white font-black">
+                  ${e.ticketTiers && e.ticketTiers.length > 0 ? Math.min(...e.ticketTiers.map(t => t.price)) : 0}
+                </div>
+              </div>
+
               <div className="mt-4 mb-4">
                 <h3 className="text-xl font-bold text-white mb-2 leading-tight group-hover:text-primary-400 transition-colors h-14 overflow-hidden">{e.name}</h3>
                 <p className="text-gray-400 text-sm line-clamp-2">{e.description}</p>
@@ -120,7 +128,7 @@ export default function EventList() {
                 <Link to={`/events/${e._id}`} className="flex-1 text-center bg-white/5 hover:bg-white/10 hover:text-primary-400 text-white font-medium py-2 rounded-lg border border-white/5 transition-all">
                   Get Tickets
                 </Link>
-                {user && user.id === e.createdBy && (
+                {user && (user.id === e.createdBy || user.roles.includes('admin')) && (
                   <Link to={`/events/${e._id}/edit`} className="px-3 flex items-center justify-center bg-primary-500/10 hover:bg-primary-500/20 text-primary-400 border border-primary-500/20 rounded-lg transition-all">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                   </Link>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthProvider'
 
@@ -6,8 +6,12 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
-  const { login } = useAuth()
+  const { login, user } = useAuth()
   const nav = useNavigate()
+
+  useEffect(() => {
+    if (user) nav('/')
+  }, [user, nav])
 
   async function submit(e) {
     e.preventDefault()
@@ -46,7 +50,7 @@ export default function Login() {
             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Email Address</label>
             <input
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={e => { setEmail(e.target.value); setError(null) }}
               className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary-500 focus:bg-black/40 transition-all text-white placeholder-gray-600"
               placeholder="name@company.com"
             />
@@ -59,7 +63,7 @@ export default function Login() {
             <input
               type="password"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={e => { setPassword(e.target.value); setError(null) }}
               className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary-500 focus:bg-black/40 transition-all text-white placeholder-gray-600"
               placeholder="••••••••"
             />

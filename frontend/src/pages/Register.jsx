@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthProvider'
 
@@ -7,8 +7,12 @@ export default function Register() {
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
   const [error, setError] = useState(null)
-  const { register } = useAuth()
+  const { register, user } = useAuth()
   const nav = useNavigate()
+
+  useEffect(() => {
+    if (user) nav('/')
+  }, [user, nav])
 
   async function submit(e) {
     e.preventDefault()
@@ -17,7 +21,12 @@ export default function Register() {
       nav('/')
     } catch (err) {
       console.error(err)
-      setError(err.response?.data?.error || err.message || 'Registration failed')
+      let msg = err.response?.data?.error || err.message || 'Registration failed'
+      // handle express-validator array
+      if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
+        msg = err.response.data.errors.map(e => e.msg).join(', ')
+      }
+      setError(msg)
     }
   }
 
@@ -37,7 +46,7 @@ export default function Register() {
             <label className="block text-sm font-medium text-gray-400 mb-1">Full Name</label>
             <input
               value={name}
-              onChange={e => setName(e.target.value)}
+              onChange={e => { setName(e.target.value); setError(null) }}
               className="w-full bg-dark-bg/50 border border-primary-900/30 rounded-lg px-4 py-2 focus:outline-none focus:border-primary-500 transition-colors text-white"
               placeholder="John Doe"
             />
@@ -46,7 +55,7 @@ export default function Register() {
             <label className="block text-sm font-medium text-gray-400 mb-1">Email</label>
             <input
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={e => { setEmail(e.target.value); setError(null) }}
               className="w-full bg-dark-bg/50 border border-primary-900/30 rounded-lg px-4 py-2 focus:outline-none focus:border-primary-500 transition-colors text-white"
               placeholder="you@example.com"
             />
@@ -56,7 +65,7 @@ export default function Register() {
             <input
               type="password"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={e => { setPassword(e.target.value); setError(null) }}
               className="w-full bg-dark-bg/50 border border-primary-900/30 rounded-lg px-4 py-2 focus:outline-none focus:border-primary-500 transition-colors text-white"
               placeholder="••••••••"
             />

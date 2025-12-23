@@ -23,7 +23,8 @@ export default function EditEvent() {
             .then(r => {
                 const e = r.data
                 // Basic auth check on frontend
-                if (user && e.createdBy && e.createdBy !== user.id) {
+                // Basic auth check on frontend
+                if (user && e.createdBy && e.createdBy !== user.id && !user.roles?.includes('admin')) {
                     // alert('Not authorized') // strict mode might cause issues, let backend handle or redirect
                 }
                 setFormData({

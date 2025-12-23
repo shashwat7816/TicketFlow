@@ -8,6 +8,8 @@ export default function AdminDashboard() {
     const [stats, setStats] = useState(null)
     const [events, setEvents] = useState([])
     const [users, setUsers] = useState([])
+    const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, user: null })
+    const [deleteEventConfirmation, setDeleteEventConfirmation] = useState({ show: false, event: null })
 
     useEffect(() => {
         loadData()
@@ -31,35 +33,49 @@ export default function AdminDashboard() {
         } catch (e) { console.error(e) }
     }
 
-    async function deleteEvent(id) {
-        if (!window.confirm('Delete this event?')) return
+    function requestDeleteEvent(event) {
+        setDeleteEventConfirmation({ show: true, event })
+    }
+
+    async function confirmDeleteEvent() {
+        if (!deleteEventConfirmation.event) return
+        const eventId = deleteEventConfirmation.event._id
+
+        setEvents(prev => prev.filter(e => e._id !== eventId))
+        setDeleteEventConfirmation({ show: false, event: null })
+
         try {
-            // Optimistic update
-            setEvents(prev => prev.filter(e => e._id !== id))
-            await api.delete(`/api/admin/events/${id}`)
-            alert('Event deleted successfully')
-            loadData()
+            await api.delete(`/api/admin/events/${eventId}`)
+            // Silent success or optional toast
         } catch (e) {
             alert('Failed to delete event: ' + (e.response?.data?.error || e.message))
-            loadData() // Re-fetch to sync state if failed
+            loadData()
         }
     }
 
-    async function deleteUser(id) {
-        if (!window.confirm('Delete this user?')) return
+    function requestDeleteUser(user) {
+        setDeleteConfirmation({ show: true, user })
+    }
+
+    async function confirmDeleteUser() {
+        if (!deleteConfirmation.user) return
+        const userId = deleteConfirmation.user._id
+
+        // Optimistic UI update
+        setUsers(prev => prev.filter(u => u._id !== userId))
+        setDeleteConfirmation({ show: false, user: null })
+
         try {
-            setUsers(prev => prev.filter(u => u._id !== id))
-            await api.delete(`/api/admin/users/${id}`)
-            alert('User deleted successfully')
-            loadData()
+            await api.delete(`/api/admin/users/${userId}`)
+            // Silent success or optional toast
         } catch (e) {
             alert('Failed to delete user: ' + (e.response?.data?.error || e.message))
-            loadData()
+            loadData() // Re-fetch to sync if failed
         }
     }
 
     return (
-        <div className="space-y-8 pb-10">
+        <div className="space-y-8 pb-10 relative">
             <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
 
             {/* Stats Grid */}
@@ -111,7 +127,12 @@ export default function AdminDashboard() {
                                         ))}
                                     </td>
                                     <td className="py-4 text-right">
-                                        <button onClick={() => deleteUser(u._id)} className="text-red-400 hover:text-red-300 font-medium hover:bg-red-400/10 px-3 py-1 rounded transition-colors">Delete</button>
+                                        <button
+                                            onClick={() => requestDeleteUser(u)}
+                                            className="text-red-400 hover:text-red-300 font-medium hover:bg-red-400/10 px-3 py-1 rounded transition-colors"
+                                        >
+                                            Delete
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
@@ -140,7 +161,7 @@ export default function AdminDashboard() {
                                     <td className="py-4">{e.venue}</td>
                                     <td className="py-4">{new Date(e.date).toLocaleDateString()}</td>
                                     <td className="py-4 text-right">
-                                        <button onClick={() => deleteEvent(e._id)} className="text-red-400 hover:text-red-300 font-medium hover:bg-red-400/10 px-3 py-1 rounded transition-colors">Delete</button>
+                                        <button onClick={() => requestDeleteEvent(e)} className="text-red-400 hover:text-red-300 font-medium hover:bg-red-400/10 px-3 py-1 rounded transition-colors">Delete</button>
                                     </td>
                                 </tr>
                             ))}
@@ -157,6 +178,64 @@ export default function AdminDashboard() {
                 <h2 className="text-xl font-bold text-white mb-6">Support Helpdesk</h2>
                 <AdminSupport />
             </div>
+
+            {/* Delete Confirmation Modal */}
+            {deleteConfirmation.show && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-dark-bg border border-white/10 p-8 rounded-3xl max-w-sm w-full shadow-2xl relative">
+                        <div className="w-16 h-16 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </div>
+                        <h3 className="text-2xl font-bold text-white mb-2 text-center">Delete User?</h3>
+                        <p className="text-gray-400 mb-6 text-center">
+                            Are you sure you want to delete <strong className="text-white">{deleteConfirmation.user?.name}</strong>? This action cannot be undone.
+                        </p>
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => setDeleteConfirmation({ show: false, user: null })}
+                                className="flex-1 bg-white/5 hover:bg-white/10 text-white font-bold py-3 rounded-xl transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDeleteUser}
+                                className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-red-900/20"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Event Delete Confirmation Modal */}
+            {deleteEventConfirmation.show && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-dark-bg border border-white/10 p-8 rounded-3xl max-w-sm w-full shadow-2xl relative">
+                        <div className="w-16 h-16 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </div>
+                        <h3 className="text-2xl font-bold text-white mb-2 text-center">Delete Event?</h3>
+                        <p className="text-gray-400 mb-6 text-center">
+                            Are you sure you want to delete <strong className="text-white">{deleteEventConfirmation.event?.name}</strong>? This will cancel all associated tickets.
+                        </p>
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => setDeleteEventConfirmation({ show: false, event: null })}
+                                className="flex-1 bg-white/5 hover:bg-white/10 text-white font-bold py-3 rounded-xl transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDeleteEvent}
+                                className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-red-900/20"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

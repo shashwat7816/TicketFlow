@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthProvider'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import AdminRoute from './auth/AdminRoute'
 import App from './App'
 import EventList from './pages/EventList'
 import EventDetail from './pages/EventDetail'
@@ -29,10 +30,13 @@ createRoot(document.getElementById('root')).render(
               <Route path="my-tickets" element={<MyTickets />} />
               <Route path="login" element={<Login />} />
               <Route path="register" element={<Register />} />
-              <Route path="create-event" element={<CreateEvent />} />
+              <Route element={<AdminRoute />}>
+                <Route path="create-event" element={<CreateEvent />} />
+                <Route path="admin" element={<AdminDashboard />} />
+                <Route path="events/:id/edit" element={<EditEvent />} />
+              </Route>
               <Route path="memberships" element={<SeasonPasses />} />
               <Route path="support" element={<Support />} />
-              <Route path="admin" element={<AdminDashboard />} />
             </Route>
           </Routes>
         </BrowserRouter>

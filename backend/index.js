@@ -4,11 +4,12 @@ const mongoose = require('mongoose')
 const cors = require('cors')
 const helmet = require('helmet')
 const morgan = require('morgan')
+const cookieParser = require('cookie-parser')
 
 const authRoutes = require('./routes/auth')
 const eventsRoutes = require('./routes/events')
-const reservationsRoutes = require('./routes/reservations')
 const ordersRoutes = require('./routes/orders')
+// const reservationsRoutes = require('./routes/reservations') // Deprecated
 const adminRoutes = require('./routes/admin')
 const passRoutes = require('./routes/passRoutes')
 const supportRoutes = require('./routes/supportRoutes')
@@ -18,9 +19,11 @@ const app = express()
 app.use(helmet())
 app.use(morgan('dev'))
 app.use(cors({
-  origin: true, // Allow all origins for Vercel/Render
+  origin: ['http://localhost:3000', 'http://localhost:3001'],
   credentials: true
 }))
+app.use(async (req, res, next) => { if (req.method === 'OPTIONS') return res.sendStatus(200); next() }) // Preflight fix attempt
+app.use(cookieParser())
 app.use(express.json())
 
 // Ensure logs directory exists for crash dumps
@@ -41,7 +44,7 @@ function dumpCriticalError(source, err) {
 
 app.use('/api/auth', authRoutes)
 app.use('/api/events', eventsRoutes)
-app.use('/api/reservations', reservationsRoutes)
+app.use('/api/reservations', ordersRoutes) // Mapped to Orders (create reserved order)
 app.use('/api/orders', ordersRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/passes', passRoutes)
@@ -56,18 +59,27 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/ticketflow'
     // bind to 0.0.0.0 to ensure IPv4 (127.0.0.1) clients can connect on Windows
     app.listen(PORT, '0.0.0.0', () => console.log('Backend listening on', PORT))
     // background job: clear expired reservations every minute (release per-seat documents)
-    const Reservation = require('./models/reservation')
-    const Seat = require('./models/seat')
+    // background job: clear expired reservations (pending orders) every minute
+    const Order = require('./models/order')
+    const Event = require('./models/event')
     setInterval(async () => {
       try {
         const now = new Date()
-        const expired = await Reservation.find({ status: 'active', expiresAt: { $lte: now } }).lean()
-        for (const r of expired) {
+        const expired = await Order.find({ status: 'reserved', expiresAt: { $lte: now } }).limit(50)
+        for (const o of expired) {
           // release seats
-          await Seat.updateMany({ eventId: r.eventId, seatId: { $in: r.seatIds } }, { $set: { status: 'available' } })
-          await Reservation.updateOne({ _id: r._id }, { $set: { status: 'cancelled' } })
+          const seatIds = o.tickets.map(t => t.seatId)
+          if (seatIds.length > 0) {
+            await Event.updateOne(
+              { _id: o.eventId },
+              { $set: { "seatingChart.$[elem].status": "available" } },
+              { arrayFilters: [{ "elem.seatId": { $in: seatIds } }] }
+            )
+          }
+          o.status = 'cancelled'
+          await o.save()
         }
-      } catch (e) { console.error('reservation cleanup error', e) }
+      } catch (e) { console.error('order cleanup error', e) }
     }, 60 * 1000)
   })
   .catch(err => {
