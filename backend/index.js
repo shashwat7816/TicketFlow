@@ -54,7 +54,7 @@ app.get('/', (req, res) => res.json({ status: 'ok' }))
 
 const PORT = process.env.PORT || 4000
 
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/ticketflow')
+mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     // bind to 0.0.0.0 to ensure IPv4 (127.0.0.1) clients can connect on Windows
     app.listen(PORT, '0.0.0.0', () => console.log('Backend listening on', PORT))
